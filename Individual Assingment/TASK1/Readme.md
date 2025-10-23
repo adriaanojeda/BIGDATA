@@ -2,7 +2,7 @@ Tarea Individual 1: Multiplicación de Matrices - Línea Base ($O(N^3)$)
 
 Este repositorio contiene la implementación del algoritmo básico de multiplicación de matrices en C++, Java y Python. El objetivo de la Tarea 1 es realizar un estudio de rendimiento (benchmark) comparativo entre los tres lenguajes, enfocándose en cómo el tiempo de ejecución escala con el tamaño de la matriz ($N$).
 
-⚙️ Estructura del Proyecto
+Estructura del Proyecto
 
 El proyecto sigue el principio de Separación de Intereses:
 
@@ -20,7 +20,7 @@ La lógica de prueba, temporización y persistencia de datos reside en los archi
 |-- Task1.pdf       (Informe final LaTeX)
 
 
-📊 Parámetros del Experimento
+Parámetros del Experimento
 
 Para realizar las pruebas de escalabilidad requeridas por la ULPGC, debes ejecutar cada programa proporcionando dos argumentos clave:
 
@@ -36,31 +36,15 @@ R (Repeticiones)
 
 Carga de Trabajo ($\propto N^3$)
 
-100
+100 - 10 Baja
 
-10
+400 - 5 Media-Baja
 
-Baja
+800 - 3 Media-Alta
 
-400
+1024 - 3 Alta (Aprox. $1.07 \times 10^9$ Ops)
 
-5
-
-Media-Baja
-
-800
-
-3
-
-Media-Alta
-
-1024
-
-3
-
-Alta (Aprox. $1.07 \times 10^9$ Ops)
-
-🚀 Guía de Ejecución
+Guía de Ejecución
 
 IMPORTANTE: Todos los comandos de ejecución deben realizarse desde la raíz del proyecto (/BIGDATA o TASK1) para que el código pueda encontrar la carpeta \texttt{data/} correctamente.
 
