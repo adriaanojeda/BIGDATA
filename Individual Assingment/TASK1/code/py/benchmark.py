@@ -1,9 +1,27 @@
-import sys # que hace esta libreria: manejo de argumentos de linea de comandos, salida de errores, etc.
-from time import time # medir tiempo de ejecucion, funcion time()
-import matrix_multiplier as mm # importar el modulo de multiplicacion de matrices
+import sys 
+from time import time
+import matrix_multiplier as mm 
+import os 
+
+def save_data(n, num_runs, average_time):
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    data_dir = os.path.join(script_dir, "..", "..", "data")
+    
+    file_path = os.path.join(data_dir, "results_py.csv")
+
+    try:
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
+
+        with open(file_path, "a") as f:
+            f.write(f"Python,{n},{num_runs},{average_time:.6f}\n")
+        print(f"Resultado guardado en {file_path}")
+    except IOError as e:
+        print(f"ADVERTENCIA: No se pudo guardar el archivo de datos. Error: {e}", file=sys.stderr)
 
 def benchmark():
-    if len(sys.argv) != 3: # verificar que se pasen exactamente 2 argumentos, el tamaño N y el número de ejecuciones, además del nombre del script
+    if len(sys.argv) != 3:
         print("Uso: python benchmark.py <tamaño_N> <num_ejecuciones>", file=sys.stderr)
         sys.exit(1)
 
@@ -11,7 +29,7 @@ def benchmark():
         n = int(sys.argv[1])
         num_runs = int(sys.argv[2])
     except ValueError:
-        print("Los argumentos deben ser números enteros.", file=sys.stderr) # mensaje de error si los argumentos no son enteros, y se imprime en stderr
+        print("Los argumentos deben ser números enteros.", file=sys.stderr)
         sys.exit(1)
 
     A, B, C = mm.initialize_matrices(n)
@@ -29,12 +47,10 @@ def benchmark():
         run_time = end - start
         total_time += run_time
         
-        # print(f"Run {run + 1}: {run_time:.6f} s")
-
     average_time = total_time / num_runs
     print(f"Tiempo promedio (segundos): {average_time:.6f}")
     
-    # print(f"C[0][0] para verificación: {C[0][0]:.6f}")
+    save_data(n, num_runs, average_time)
 
 if __name__ == "__main__":
     benchmark()
