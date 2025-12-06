@@ -1,0 +1,237 @@
+\documentclass[a4paper,12pt]{article}
+
+% ------------------- PACKAGES -------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{array}
+
+% ------------------- CODE LISTING SETTINGS -------------------
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegray},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+% ------------------- PAGE SETTINGS -------------------
+\geometry{margin=2.5cm}
+\setstretch{1.25}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Parallelization Benchmark – Task 3}
+\fancyhead[R]{Big Data – ULPGC}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{December 6, 2025}
+
+% ------------------- TITLE FORMATTING -------------------
+\titleformat{\section}{\large\bfseries}{\thesection.}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{1em}{}
+
+% ------------------- DOCUMENT START -------------------
+\begin{document}
+
+% ------------------------------------------------------------
+% Cover Page
+% ------------------------------------------------------------
+\begin{titlepage}
+    \centering
+    \includegraphics[width=0.3\textwidth]{ulpgc_logo.png}\par\vspace{1cm}
+    {\Large\textbf{Universidad de Las Palmas de Gran Canaria}}\\[0.3cm]
+    {\large Faculty of Computer Science and Engineering}\\[1cm]
+    {\Huge\bfseries Task 3: Parallelization Benchmark of Matrix Multiplication\par}
+    \vspace{0.8cm}
+    {\Large Big Data – Academic Year 2025–2026\par}
+    \vspace{1.5cm}
+    {\Large \textbf{Individual Assignments}\par}
+    \vspace{0.3cm}
+    {\large \textbf{Author:}\par}
+    \begin{center}
+    \begin{tabular}{ll}
+    Adrián Ojeda Viera & (DNI: 45364780V) \\
+    \end{tabular}
+    \end{center}
+    \vspace{0.8cm}
+    {\large \textbf{Repository:}\par}
+    \vspace{0.2cm}
+    \href{https://github.com/adriaanojeda/BIGDATA.git}{\textcolor{blue}{https://github.com/adriaanojeda/BIGDATA.git}}
+    \vfill
+    {\large \textbf{Submission Date:} December 6, 2025\par}
+    \vspace{1cm}
+    \rule{0.9\textwidth}{0.4pt}\\[0.3cm]
+    {\small \textit{“This document analyzes the impact of parallel computing techniques (Streams, Threads, Executors) and memory-layout optimizations (Vectorization) on the performance of dense matrix multiplication.”}}
+\end{titlepage}
+
+% ------------------------------------------------------------
+% Abstract
+% ------------------------------------------------------------
+\begin{abstract}
+This report presents a comparative study of different matrix multiplication implementations in Java. We evaluated sequential, parallel (using Streams and manual Threads), and memory-optimized (simulated vectorization) approaches. Benchmarks conducted on matrix sizes up to $N=4096$ reveal that while parallelization offers significant speedups ($\sim 9x$), the single-threaded memory-optimized approach outperforms all parallel versions with a speedup of $\sim 38x$. This finding underscores that for memory-bound algorithms like matrix multiplication, data locality and cache usage are often more critical than raw core count.
+\end{abstract}
+
+\newpage
+
+% ------------------------------------------------------------
+\section{Introduction and Objectives}
+
+Matrix multiplication is a computationally intensive operation with a complexity of $O(n^3)$. In the context of Big Data, optimizing this operation is crucial. Modern CPUs offer multiple cores and vector instructions (SIMD), providing opportunities for parallelization.
+
+The main objectives of this task were:
+\begin{itemize}
+    \item \textbf{Implementation}: Develop parallel versions of matrix multiplication using Java's concurrency tools (Parallel Streams, Threads, Atomic variables).
+    \item \textbf{Optimization}: Implement a "Vectorized" version that improves memory access patterns (Cache Friendly).
+    \item \textbf{Benchmarking}: Measure Execution Time, Speedup, and Efficiency for large matrices ($N=4096$).
+\end{itemize}
+
+% ------------------------------------------------------------
+\section{Methodology}
+
+\subsection{Experimental Setup}
+The experiments were executed on a machine with the following specifications:
+\begin{itemize}
+    \item \textbf{CPU:} [INSERT YOUR CPU MODEL HERE] % Rellena esto
+    \item \textbf{Cores/Threads:} [INSERT CORES/THREADS HERE] % Rellena esto (ej: 4 Cores / 8 Threads)
+    \item \textbf{RAM:} [INSERT RAM AMOUNT] % Rellena esto
+    \item \textbf{Java Version:} OpenJDK [VERSION]
+\end{itemize}
+
+\subsection{Implementations}
+
+We compared five different approaches:
+
+\begin{enumerate}
+    \item \textbf{Sequential:} The standard triple-loop algorithm ($ijk$ order).
+    \item \textbf{Parallel Streams:} Uses \texttt{IntStream.range().parallel()} to distribute the outer loop across the ForkJoinPool.
+    \item \textbf{Threads (Manual):} Explicitly creates one \texttt{Thread} per row.
+    \item \textbf{Atomic Bag of Tasks:} Uses a fixed thread pool where workers dynamically fetch row indices from an \texttt{AtomicInteger}.
+    \item \textbf{Vectorized (Simulated):} A single-threaded version that transposes Matrix B before multiplication to allow contiguous memory access ($ikj$ access pattern equivalent).
+\end{enumerate}
+
+% ------------------------------------------------------------
+\section{Implementation Details}
+
+\subsection{Parallel Streams Approach}
+Java 8 Streams provide a high-level abstraction for parallelism. This implementation is concise and delegates thread management to the JVM.
+
+\begin{lstlisting}[language=Java, caption={Parallel Stream Implementation}]
+IntStream.range(0, n).parallel().forEach(i -> {
+    for (int j = 0; j < n; j++) {
+        double sum = 0.0;
+        for (int k = 0; k < n; k++) {
+            sum += A[i][k] * B[k][j];
+        }
+        C[i][j] = sum;
+    }
+});
+\end{lstlisting}
+
+\subsection{Vectorized / Cache Optimized Approach}
+The naive multiplication accesses Matrix B column-wise, which causes frequent CPU cache misses. By transposing B, we access it row-wise (contiguous memory), simulating vector operations.
+
+\begin{lstlisting}[language=Java, caption={Vectorized (Transposed) Implementation}]
+// Transpose B first
+double[][] B_transposed = new double[n][n];
+for(int i=0; i<n; i++) {
+    for(int j=0; j<n; j++) {
+        B_transposed[i][j] = B[j][i];
+    }
+}
+
+// Multiply using dot product of two rows (Cache Friendly)
+for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+        C[i][j] = vectorizedDotProduct(A[i], B_transposed[j]);
+    }
+}
+\end{lstlisting}
+
+% ------------------------------------------------------------
+\section{Results and Discussion}
+
+The benchmarks were run for matrix sizes $N \in \{256, 512, 1024, 2048, 4096\}$.
+
+\subsection{Quantitative Analysis}
+
+Table \ref{tab:results} shows the execution times for the largest dataset ($N=4096$).
+
+\begin{table}[H]
+\centering
+\caption{Performance Metrics at $N=4096$}
+\label{tab:results}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Method} & \textbf{Time (s)} & \textbf{Speedup} & \textbf{Notes} \\
+\midrule
+Sequential & 2034.37 & 1.0x & Baseline \\
+ParallelStream & 220.15 & 9.24x & Best Parallel \\
+Threads (Manual) & 216.08 & 9.41x & Overhead overhead \\
+Atomic BagTasks & 206.71 & 9.84x & Balanced Load \\
+\textbf{Vectorized (Sim)} & \textbf{52.30} & \textbf{38.89x} & \textbf{Best Overall} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Visual Analysis}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{task3_results.png}
+    \caption{Execution Time and Speedup vs Matrix Size. Note the massive performance gain of the Vectorized approach.}
+    \label{fig:results}
+\end{figure}
+
+\subsection{Discussion}
+
+\subsubsection{Parallelism Efficiency}
+The parallel implementations achieved a Speedup of approx $\sim 9.5x$. 
+$$Efficiency = \frac{Speedup}{Cores}$$
+Assuming a 4-core/8-thread environment, an efficiency $>100\%$ (Speedup $> 4x$) suggests that the sequential version was severely hindered by other factors or that the parallel garbage collection helped. However, the result is consistent across all parallel methods.
+
+\subsubsection{The Victory of Memory Optimization}
+The most striking result is the \textbf{Vectorized version (52.3s)}, which is $\sim 4x$ faster than the parallel versions and $\sim 38x$ faster than sequential.
+\begin{itemize}
+    \item \textbf{Why?} Matrix multiplication is \textit{memory-bound}. In the naive approach, fetching \texttt{B[k][j]} jumps across memory, causing Cache Misses.
+    \item By transposing B, we read contiguous blocks of memory. The CPU prefetcher works effectively, keeping the pipeline full.
+    \item This demonstrates that \textbf{optimizing data access patterns} often yields higher gains than simply adding more threads.
+\end{itemize}
+
+% ------------------------------------------------------------
+\section{Conclusions}
+
+Task 3 demonstrated the capabilities of Java's concurrency framework. While \texttt{ParallelStreams} offered the best balance between code simplicity and performance for parallel execution, the experiment proved that software optimization (specifically memory layout) is paramount. The single-threaded Vectorized implementation outperformed the multi-threaded naive implementations by a factor of 4, highlighting that \textbf{hardware parallelism cannot fully compensate for inefficient memory access}.
+
+\end{document}
