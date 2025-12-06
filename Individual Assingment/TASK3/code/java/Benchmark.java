@@ -33,13 +33,12 @@ public class Benchmark {
 
     private static void saveData(String method, int n, int numRuns, double averageTimeMs) {
         double averageTimeSec = averageTimeMs * 1e-3;
-        Path filePath = findDataPath("results_parallel.csv"); // Guardamos en un CSV nuevo para Task 3
+        Path filePath = findDataPath("results_parallel.csv"); 
 
         try {
             if (Files.notExists(filePath.getParent())) {
                 Files.createDirectories(filePath.getParent());
             }
-            // Si el archivo no existe, escribimos cabecera
             boolean isNew = Files.notExists(filePath);
             java.io.FileWriter fw = new java.io.FileWriter(filePath.toFile(), true);
             
@@ -66,15 +65,13 @@ public class Benchmark {
 
         System.out.println("=== INICIANDO BENCHMARK TASK 3 (N=" + n + ") ===");
 
-        // Preparamos los datos
         double[][] a = new double[n][n];
         double[][] b = new double[n][n];
-        double[][] c = new double[n][n]; // Matriz resultado reutilizable
+        double[][] c = new double[n][n];
 
         MatrixMultiplier.initializeMatrix(n, a);
         MatrixMultiplier.initializeMatrix(n, b);
 
-        // Mapa con todas las implementaciones a probar
         Map<String, MatrixMultiplier> implementations = new LinkedHashMap<>();
         implementations.put("Sequential", new SequentialMultiplier());
         implementations.put("ParallelStream", new ParallelStreamMultiplier());
@@ -82,23 +79,18 @@ public class Benchmark {
         implementations.put("Atomic_BagOfTasks", new AtomicMultiplier());
         implementations.put("Vectorized_Sim", new VectorizedMultiplier());
 
-        // Ejecutamos cada implementación
         for (Map.Entry<String, MatrixMultiplier> entry : implementations.entrySet()) {
             String name = entry.getKey();
             MatrixMultiplier multiplier = entry.getValue();
 
             System.out.print("Ejecutando " + name + "... ");
             
-            // Calentamiento rápido (JVM Warmup) - opcional pero recomendado
-            if (n <= 512) { // Solo calentamos si es pequeño para no perder tiempo
+            if (n <= 512) { 
                  multiplier.multiply(a, b, c);
             }
 
             long totalTimeMs = 0;
             for (int run = 0; run < numRuns; run++) {
-                // Reiniciamos C a 0 (aunque los algoritmos suelen sobrescribir, es buena práctica)
-                // c = new double[n][n]; // Opcional, costoso en memoria
-                
                 long start = System.currentTimeMillis();
                 multiplier.multiply(a, b, c);
                 long stop = System.currentTimeMillis();
